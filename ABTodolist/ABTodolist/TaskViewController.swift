@@ -8,8 +8,9 @@
 
 import UIKit
 import UserNotifications
+import os.log
 
-class ViewController: UIViewController, UITextFieldDelegate {
+class TaskViewController: UIViewController, UITextFieldDelegate {
     
     // MARK: - Properties
     
@@ -17,6 +18,9 @@ class ViewController: UIViewController, UITextFieldDelegate {
     let dueDatePicker = UIDatePicker()
     let currentDate = Date()
     
+    var newTask = TaskItem()
+    
+    @IBOutlet weak var taskNameTextField: UITextField!
     
     @IBOutlet weak var dueDateTextField: UITextField!
     
@@ -45,13 +49,13 @@ class ViewController: UIViewController, UITextFieldDelegate {
     
     // MARK: - Methods
     
-        func createToolbar() -> UIToolbar {
-            // Create toolbar
-            let toolbar = UIToolbar()
-            toolbar.sizeToFit()
-    
-            return toolbar
-        }
+    func createToolbar() -> UIToolbar {
+        // Create toolbar
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        
+        return toolbar
+    }
     
     func createStartDatePicker() {
         
@@ -61,7 +65,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: nil, action: #selector(self.startDateSelected))
         
         toolbar.setItems([doneButton], animated: true)
-
+        
         startDateTextField.inputAccessoryView = toolbar
         
         startDatePicker.minimumDate = currentDate
@@ -94,6 +98,23 @@ class ViewController: UIViewController, UITextFieldDelegate {
         dueDateTextField.text = self.dateToString(from: dueDatePicker.date)
     }
     
+    func dateToString(from date: Date) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd-MM-YYYY HH:mm"
+        
+        let dateFormatted = dateFormatter.string(from: date)
+        
+        return dateFormatted
+    }
+    
+    func stringToDate(from stringDate: String) -> Date {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd-MM-YYYY HH:mm"
+        dateFormatter.timeZone = TimeZone(abbreviation: "GMT+0:00")
+        
+        let date = dateFormatter.date(from: stringDate)
+        return date!
+    }
     //MARK: - UITextFieldDelegate
     
     func textFieldDidEndEditing(_ textField: UITextField) {
@@ -103,14 +124,32 @@ class ViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    func dateToString(from date: Date) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd-MM-YYYY HH:mm"
+    
+    
+    //MARK: - Actions
+    
+    @IBAction func saveTask(_ sender: UIBarButtonItem) {
         
-        let dateFormatted = dateFormatter.string(from: dueDatePicker.date)
-        
-        return dateFormatted
     }
     
+    //MARK: - Navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender)
+        
+        
+        
+        //saveButton has been pressed
+        guard let button = sender as? UIBarButtonItem, button == saveTaskButton else {
+            os_log("Save button was not pressed", log: OSLog.default, type: .debug)
+            return
+        }
+        
+        let taskName = taskNameTextField.text
+        let dueDate = dueDateTextField.text
+        let startDate = startDateTextField.text
+        
+        newTask = TaskItem(name: taskName!, startDate: stringToDate(from: dueDate!), dueDate: stringToDate(from: startDate!))
+        
+    }
 }
 
